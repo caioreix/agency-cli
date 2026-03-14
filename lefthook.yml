@@ -1,0 +1,17 @@
+pre-commit:
+  commands:
+    fmt:
+      run: make fmt && git add -u
+    fix:
+      run: make fix && git add -u
+    vet:
+      run: make vet
+
+pre-push:
+  commands:
+    lint:
+      run: make lint
+    test:
+      run: make test
+    build:
+      run: make build
