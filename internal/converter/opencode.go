@@ -1,7 +1,6 @@
 package converter
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,20 +15,35 @@ func init() { //nolint:gochecknoinits // required by cobra/converter
 }
 
 func (c *opencode) Name() string          { return "OpenCode" }
-func (c *opencode) Description() string   { return ".opencode/agents/ (project-scoped)" }
+func (c *opencode) Description() string   { return ".opencode/agents/ + ~/.config/opencode/agents/" }
 func (c *opencode) IsProjectScoped() bool { return true }
 
-func (c *opencode) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
-	if scope == ScopeGlobal {
-		return nil, errors.New("opencode is project-scoped; --scope global is not supported")
-	}
-	if err := os.MkdirAll(destDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
+func (c *opencode) Convert(a *agent.Agent, _ string, scope string) ([]string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
 		return nil, err
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	var dir string
+	switch scope {
+	case ScopeGlobal:
+		dir = filepath.Join(home, ".config", "opencode", "agents")
+	default:
+		dir = filepath.Join(cwd, ".opencode", "agents")
+	}
+
+	if mkdirErr := os.MkdirAll(dir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
+		return nil, mkdirErr
 	}
 
 	color := resolveOpenCodeColor(a.Color)
 
-	outFile := filepath.Join(destDir, a.Slug+".md")
+	outFile := filepath.Join(dir, a.Slug+".md")
 	content := "---\n" +
 		"name: " + a.Name + "\n" +
 		"description: " + a.Description + "\n" +
@@ -37,8 +51,8 @@ func (c *opencode) Convert(a *agent.Agent, destDir string, scope string) ([]stri
 		"color: '" + color + "'\n" +
 		"---\n" + a.Body
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
-		return nil, err
+	if writeErr := os.WriteFile(outFile, []byte(content), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
+		return nil, writeErr
 	}
 
 	return []string{outFile}, nil

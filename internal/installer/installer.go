@@ -52,17 +52,20 @@ func DestinationDir(toolName string) (string, error) {
 	case "aider":
 		return cwd, nil
 	case "opencode":
+		// opencode handles its own multi-dir logic in the converter
 		return filepath.Join(cwd, ".opencode", "agents"), nil
 	case "openclaw":
 		return filepath.Join(home, ".openclaw", "agency-agents"), nil
 	case "antigravity":
 		return filepath.Join(home, ".gemini", "antigravity", "skills"), nil
 	case "gemini-cli":
-		return filepath.Join(home, ".gemini", "extensions", "agency-agents"), nil
+		// gemini-cli handles its own multi-dir logic in the converter
+		return filepath.Join(cwd, ".gemini", "extensions", "agency-agents"), nil
 	case "kimi-code":
 		// kimi-code handles its own multi-dir logic in the converter
 		return filepath.Join(cwd, ".kimi", "agents"), nil
 	case "qwen":
+		// qwen handles its own multi-dir logic in the converter
 		return filepath.Join(cwd, ".qwen", "agents"), nil
 	default:
 		return "", nil

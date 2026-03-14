@@ -14,14 +14,31 @@ func init() { //nolint:gochecknoinits // required by cobra/converter
 }
 
 func (c *geminiCLI) Name() string          { return "Gemini CLI" }
-func (c *geminiCLI) Description() string   { return "~/.gemini/extensions/agency-agents/" }
-func (c *geminiCLI) IsProjectScoped() bool { return false }
+func (c *geminiCLI) Description() string   { return ".gemini/extensions/ + ~/.gemini/extensions/" }
+func (c *geminiCLI) IsProjectScoped() bool { return true }
 
-func (c *geminiCLI) Convert(a *agent.Agent, destDir string, _ string) ([]string, error) {
-	// gemini-cli installs globally regardless of scope
-	skillDir := filepath.Join(destDir, "skills", a.Slug)
-	if err := os.MkdirAll(skillDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
+func (c *geminiCLI) Convert(a *agent.Agent, _ string, scope string) ([]string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
 		return nil, err
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	var baseDir string
+	switch scope {
+	case ScopeGlobal:
+		baseDir = filepath.Join(home, ".gemini", "extensions", "agency-agents")
+	default:
+		baseDir = filepath.Join(cwd, ".gemini", "extensions", "agency-agents")
+	}
+
+	skillDir := filepath.Join(baseDir, "skills", a.Slug)
+	if mkdirErr := os.MkdirAll(skillDir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
+		return nil, mkdirErr
 	}
 
 	outFile := filepath.Join(skillDir, "SKILL.md")
@@ -30,13 +47,13 @@ func (c *geminiCLI) Convert(a *agent.Agent, destDir string, _ string) ([]string,
 		"description: " + a.Description + "\n" +
 		"---\n" + a.Body
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
-		return nil, err
+	if writeErr := os.WriteFile(outFile, []byte(content), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
+		return nil, writeErr
 	}
 
 	// Ensure extension manifest exists
-	manifestFile := filepath.Join(destDir, "gemini-extension.json")
-	if _, err := os.Stat(manifestFile); os.IsNotExist(err) {
+	manifestFile := filepath.Join(baseDir, "gemini-extension.json")
+	if _, statErr := os.Stat(manifestFile); os.IsNotExist(statErr) {
 		manifest := `{
   "name": "agency-agents",
   "version": "1.0.0"
