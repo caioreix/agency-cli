@@ -7,13 +7,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Version is set at build time via -ldflags "-X github.com/caioreix/agency-cli/cmd.Version=<tag>".
+var Version = "dev"
+
 var toolFlag string
 
 var rootCmd = &cobra.Command{
-	Use:   "agency-cli",
-	Short: "CLI to browse and install agents from The Agency",
-	Long:  "agency-cli lets you list, download, and install AI agents from the agency-agents repository into your preferred tool (Cursor, Copilot, Windsurf, etc.).",
-	RunE:  runTUI,
+	Use:     "agency-cli",
+	Short:   "CLI to browse and install agents from The Agency",
+	Long:    "agency-cli lets you list, download, and install AI agents from the agency-agents repository into your preferred tool (Cursor, Copilot, Windsurf, etc.).",
+	Version: Version,
+	RunE:    runTUI,
 }
 
 func Execute() {
