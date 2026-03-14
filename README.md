@@ -4,7 +4,7 @@ CLI tool to browse and install AI agents from [The Agency](https://github.com/ms
 
 ## Preview
 
-https://github.com/caioreix/agency-cli/raw/main/assets/preview.mp4
+![Preview](https://github.com/caioreix/agency-cli/raw/main/assets/preview.gif)
 
 ## Interactive TUI
 
