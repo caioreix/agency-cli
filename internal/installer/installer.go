@@ -58,6 +58,9 @@ func DestinationDir(toolName string) (string, error) {
 		return filepath.Join(home, ".gemini", "antigravity", "skills"), nil
 	case "gemini-cli":
 		return filepath.Join(home, ".gemini", "extensions", "agency-agents"), nil
+	case "kimi-code":
+		// kimi-code handles its own multi-dir logic in the converter
+		return filepath.Join(cwd, ".kimi", "agents"), nil
 	case "qwen":
 		return filepath.Join(cwd, ".qwen", "agents"), nil
 	default:

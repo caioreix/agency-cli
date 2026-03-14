@@ -25,6 +25,6 @@ func Execute() {
 
 func init() { //nolint:gochecknoinits // required by cobra/converter
 	const toolDesc = "target tool (claude-code, copilot, cursor, windsurf, " +
-		"aider, opencode, openclaw, antigravity, gemini-cli, qwen)"
+		"aider, opencode, openclaw, antigravity, gemini-cli, kimi-code, qwen)"
 	rootCmd.PersistentFlags().StringVarP(&toolFlag, "tool", "t", "", toolDesc)
 }

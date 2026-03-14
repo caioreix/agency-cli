@@ -72,6 +72,7 @@ func TestConverterMetadata(t *testing.T) {
 		{"openclaw", false},
 		{"antigravity", false},
 		{"gemini-cli", false},
+		{"kimi-code", true},
 		{"qwen", true},
 	}
 

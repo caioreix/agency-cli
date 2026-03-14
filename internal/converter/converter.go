@@ -47,5 +47,6 @@ var SupportedTools = []string{ //nolint:gochecknoglobals // exported package-lev
 	"openclaw",
 	"antigravity",
 	"gemini-cli",
+	"kimi-code",
 	"qwen",
 }
