@@ -60,6 +60,10 @@ func Parse(filePath, category string) (*Agent, error) {
 		if idx := strings.Index(line, ": "); idx > 0 {
 			key := strings.TrimSpace(line[:idx])
 			val := strings.TrimSpace(line[idx+2:])
+			// Strip surrounding quotes (single or double)
+			if len(val) >= 2 && ((val[0] == '"' && val[len(val)-1] == '"') || (val[0] == '\'' && val[len(val)-1] == '\'')) {
+				val = val[1 : len(val)-1]
+			}
 			fields[key] = val
 		}
 	}
