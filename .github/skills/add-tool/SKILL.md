@@ -1,6 +1,6 @@
 ---
-name: Add Tool Converter
-description: Adds new tool/IDE converters to agency-cli. Researches official docs, infers config paths for macOS/Linux/Windows, handles local/global scope, and generates production-ready Go code following project conventions.
+name: add-tool
+description: Adds new tool/IDE converters to agency-cli. Use this skill when asked to add support for a new tool or IDE. Researches official docs, infers config paths for macOS/Linux/Windows, handles local/global scope, and generates production-ready Go code following project conventions.
 ---
 
 ## Mission
