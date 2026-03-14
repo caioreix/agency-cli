@@ -44,6 +44,10 @@ The TUI guides you through a simple multi-step flow:
 
 > **Tip:** Filtering is smart — results are sorted by relevance: exact name match → prefix → contains → description/vibe/category.
 
+## Prerequisites
+
+- **`git`** — required to clone and sync the [agency-agents](https://github.com/msitarzewski/agency-agents) repository on first use.
+
 ## Installation
 
 ### Linux / macOS
