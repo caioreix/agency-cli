@@ -14,7 +14,8 @@ You are a senior Go developer specialised in the `agency-cli` codebase. When ask
 3. **Implement** — Create `internal/converter/<toolname>.go`.
 4. **Test** — Create `internal/converter/<toolname>_test.go`.
 5. **Register** — Update `internal/installer/installer.go`, `internal/converter/converter.go`, and `cmd/root.go`.
-6. **Verify** — Run `go test ./...` and confirm everything passes.
+6. **Document** — Update `README.md` Supported Tools table.
+7. **Verify** — Run `go test ./...` and `make lint` and confirm everything passes.
 
 ---
 
@@ -107,39 +108,38 @@ func appDataDir() (string, error) {
 
 ## File Permissions (lint-compliant)
 
+Always use distinct variable names and split the `WriteFile` call onto its own line — the `//nolint` comment pushes inline `if` forms over the 120-char golines limit:
+
 ```go
-os.MkdirAll(dir, 0o755)                          //nolint:gosec // G301: world-traversable
-os.WriteFile(file, []byte(content), 0o644)        //nolint:gosec // G306: world-readable
+if mkdirErr := os.MkdirAll(dir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
+    return nil, mkdirErr
+}
+
+writeErr := os.WriteFile(file, []byte(content), 0o644) //nolint:gosec // G306: world-readable
+if writeErr != nil {
+    return nil, writeErr
+}
 ```
+
+If a function writes multiple files, use distinct variable names (`writeErr`, `manifestErr`, `writeConfigErr`, …) to avoid `govet` shadow warnings.
 
 ---
 
 ## Existing Converter Reference
 
-### Simple global — `claude.go`
+### Dual-scope — `claude.go` / `copilot.go` / `kimi.go` / `opencode.go` / `gemini.go` / `qwen.go`
 
-Writes a `.md` file with frontmatter. Ignores scope (always global).
+`Description()` shows both paths separated by ` + `:
 
 ```go
-func (c *claudeCode) Convert(a *agent.Agent, destDir string, _ string) ([]string, error) {
-    if err := os.MkdirAll(destDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
-        return nil, err
-    }
-    outFile := filepath.Join(destDir, a.Slug+".md")
-    content := "---\nname: " + a.Name + "\ndescription: " + a.Description + "\n---\n" + a.Body
-    if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
-        return nil, err
-    }
-    return []string{outFile}, nil
-}
+func (c *myTool) Description() string   { return ".mytool/agents/ + ~/.mytool/agents/" }
+func (c *myTool) IsProjectScoped() bool { return true }
 ```
 
-### Dual-scope — `copilot.go`
-
-Different directories for local vs global.
+`Convert()` resolves directories itself — ignores `destDir`:
 
 ```go
-func (c *copilot) Convert(a *agent.Agent, _ string, scope string) ([]string, error) {
+func (c *myTool) Convert(a *agent.Agent, _ string, scope string) ([]string, error) {
     home, err := os.UserHomeDir()
     if err != nil {
         return nil, err
@@ -148,25 +148,28 @@ func (c *copilot) Convert(a *agent.Agent, _ string, scope string) ([]string, err
     if err != nil {
         return nil, err
     }
-    var dirs []string
+
+    var dir string
     switch scope {
     case ScopeGlobal:
-        dirs = []string{filepath.Join(home, ".copilot", "agents")}
+        dir = filepath.Join(home, ".mytool", "agents")
     default:
-        dirs = []string{filepath.Join(cwd, ".github", "agents")}
+        dir = filepath.Join(cwd, ".mytool", "agents")
     }
-    var files []string
-    for _, dir := range dirs {
-        if mkdirErr := os.MkdirAll(dir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
-            return nil, mkdirErr
-        }
-        outFile := filepath.Join(dir, a.Slug+".md")
-        if writeErr := os.WriteFile(outFile, []byte(content), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
-            return nil, writeErr
-        }
-        files = append(files, outFile)
+
+    if mkdirErr := os.MkdirAll(dir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
+        return nil, mkdirErr
     }
-    return files, nil
+
+    outFile := filepath.Join(dir, a.Slug+".md")
+    content := "---\nname: " + a.Name + "\n---\n" + a.Body
+
+    writeErr := os.WriteFile(outFile, []byte(content), 0o644) //nolint:gosec // G306: world-readable
+    if writeErr != nil {
+        return nil, writeErr
+    }
+
+    return []string{outFile}, nil
 }
 ```
 
@@ -181,6 +184,10 @@ func (c *cursor) Convert(a *agent.Agent, destDir string, scope string) ([]string
 }
 ```
 
+### Global-only — `openclaw.go` / `antigravity.go`
+
+`IsProjectScoped()` returns `false`. Scope param is `_`. `Description()` shows only the global path.
+
 ### Append-to-single-file — `windsurf.go` / `aider.go`
 
 Read existing file and append; write header only on first run.
@@ -194,18 +201,42 @@ if existing, err := os.ReadFile(outFile); err == nil {
 }
 ```
 
+### Multi-file per agent — `kimi.go`
+
+Some tools produce multiple files per agent (e.g. a YAML config + a Markdown system prompt). Return all file paths from `Convert()`:
+
+```go
+systemFile := filepath.Join(dir, a.Slug+".md")
+writeErr := os.WriteFile(systemFile, []byte(a.Body), 0o644) //nolint:gosec // G306: world-readable
+if writeErr != nil {
+    return nil, writeErr
+}
+
+configFile := filepath.Join(dir, a.Slug+".yaml")
+writeConfigErr := os.WriteFile(configFile, []byte(yamlContent), 0o644) //nolint:gosec // G306: world-readable
+if writeConfigErr != nil {
+    return nil, writeConfigErr
+}
+
+return []string{configFile, systemFile}, nil
+```
+
 ### Subdirectory + manifest — `gemini.go`
 
 Create a per-agent subdirectory and only write a manifest if it doesn't exist yet.
 
 ```go
-skillDir := filepath.Join(destDir, "skills", a.Slug)
-if err := os.MkdirAll(skillDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
-    return nil, err
+skillDir := filepath.Join(baseDir, "skills", a.Slug)
+if mkdirErr := os.MkdirAll(skillDir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
+    return nil, mkdirErr
 }
-manifestFile := filepath.Join(destDir, "gemini-extension.json")
-if _, err := os.Stat(manifestFile); os.IsNotExist(err) {
-    // write manifest once
+manifestFile := filepath.Join(baseDir, "gemini-extension.json")
+if _, statErr := os.Stat(manifestFile); os.IsNotExist(statErr) {
+    // write manifest once — use a distinct variable name to avoid shadow
+    manifestErr := os.WriteFile(manifestFile, []byte(manifest), 0o644) //nolint:gosec // G306: world-readable
+    if manifestErr != nil {
+        return nil, manifestErr
+    }
 }
 ```
 
@@ -228,11 +259,22 @@ var SupportedTools = []string{
 
 ### 2. `internal/installer/installer.go` — add case to `DestinationDir`
 
+**Global-only** (converter uses `destDir`):
 ```go
 case "new-tool":
     return filepath.Join(home, ".newtool", "agents"), nil
-// or for project-scoped:
+```
+
+**Project-only** (converter uses `destDir`):
+```go
 case "new-tool":
+    return filepath.Join(cwd, ".newtool", "agents"), nil
+```
+
+**Dual-scope** (converter resolves paths itself — return the local/cwd path as default):
+```go
+case "new-tool":
+    // new-tool handles its own multi-dir logic in the converter
     return filepath.Join(cwd, ".newtool", "agents"), nil
 ```
 
@@ -242,39 +284,91 @@ case "new-tool":
 const toolDesc = "target tool (claude-code, copilot, cursor, ..., new-tool)"
 ```
 
+### 4. `README.md` — add row to Supported Tools table
+
+```markdown
+| new-tool | `.newtool/agents/ + ~/.newtool/agents/` | project + user |
+```
+
+Use `project` for project-only, `user` for global-only, `project + user` for dual-scope.
+
 ---
 
 ## Test Pattern
 
+All test files must start with the `//nolint:testpackage` directive (tests share the `newTestAgent()` helper defined in `converter_test.go`):
+
 ```go
+//nolint:testpackage // shares newTestAgent helper and tests unexported functions
 package converter
+```
 
-import (
-    "os"
-    "path/filepath"
-    "testing"
+### Local scope test — uses `t.Chdir` (incompatible with `t.Parallel`)
 
-    "github.com/stretchr/testify/assert"
-    "github.com/stretchr/testify/require"
-)
+```go
+// TestMyTool_Convert_Local uses t.Chdir which is incompatible with t.Parallel().
+func TestMyTool_Convert_Local(t *testing.T) {
+    t.Chdir(t.TempDir())
 
-func TestMyTool_Convert(t *testing.T) {
-    t.Parallel()
-    dir := t.TempDir()
+    cwd, err := os.Getwd()
+    require.NoError(t, err)
+
     a := newTestAgent()
     c, _ := Get("my-tool")
 
-    files, err := c.Convert(a, dir, ScopeLocal)
+    files, err := c.Convert(a, "", ScopeLocal)
     require.NoError(t, err)
     require.Len(t, files, 1)
-    assert.Equal(t, filepath.Join(dir, "test-agent.md"), files[0])
+
+    assert.Equal(t, filepath.Join(cwd, ".mytool", "agents", "test-agent.md"), files[0])
 
     content, err := os.ReadFile(files[0])
     require.NoError(t, err)
     assert.Contains(t, string(content), "name: Test Agent")
     assert.Contains(t, string(content), "## Mission")
 }
+```
 
+### Default scope test — same as local (uses `t.Chdir`)
+
+```go
+// TestMyTool_Convert_Default uses t.Chdir which is incompatible with t.Parallel().
+func TestMyTool_Convert_Default(t *testing.T) {
+    t.Chdir(t.TempDir())
+
+    cwd, err := os.Getwd()
+    require.NoError(t, err)
+
+    c, _ := Get("my-tool")
+    files, err := c.Convert(newTestAgent(), "", ScopeDefault)
+    require.NoError(t, err)
+
+    assert.Equal(t, filepath.Join(cwd, ".mytool", "agents", "test-agent.md"), files[0])
+}
+```
+
+### Global scope test — uses `t.Parallel` + cleanup
+
+```go
+func TestMyTool_Convert_Global(t *testing.T) {
+    t.Parallel()
+    home, err := os.UserHomeDir()
+    require.NoError(t, err)
+
+    c, _ := Get("my-tool")
+    files, err := c.Convert(newTestAgent(), "", ScopeGlobal)
+    require.NoError(t, err)
+    require.Len(t, files, 1)
+
+    assert.Equal(t, filepath.Join(home, ".mytool", "agents", "test-agent.md"), files[0])
+
+    t.Cleanup(func() { os.Remove(files[0]) })
+}
+```
+
+### Project-only global error test
+
+```go
 func TestMyTool_Convert_GlobalErrors(t *testing.T) {
     t.Parallel()
     c, _ := Get("my-tool")
@@ -283,11 +377,26 @@ func TestMyTool_Convert_GlobalErrors(t *testing.T) {
 }
 ```
 
+### Variable naming in assertions — avoid `encoded-compare` lint
+
+Do **not** use variable names containing `yaml`, `json`, or `xml` in `assert.Equal` calls — `testifylint` will flag them. Use neutral names:
+
+```go
+// ✅ good
+wantConfigFile := filepath.Join(cwd, ".mytool", "agents", "test-agent.yaml")
+assert.Equal(t, wantConfigFile, files[0])
+
+// ❌ bad — triggers testifylint encoded-compare
+expectedYAMLPath := filepath.Join(cwd, ".mytool", "agents", "test-agent.yaml")
+assert.Equal(t, expectedYAMLPath, files[0])
+```
+
 Minimum test cases per converter:
 
 | Case | Required |
 |---|---|
 | Local install — verify file path and key content | ✅ |
+| Default scope — verify same path as local | ✅ (dual-scope only) |
 | Global install — success or expected error | ✅ |
 | Scope ignored (global-only tools) | ✅ |
 | Append behaviour (single-file converters) | ✅ |
@@ -301,8 +410,10 @@ Before finishing, verify all of the following:
 
 - [ ] `internal/converter/<tool>.go` — `init()`, struct, all 4 interface methods implemented
 - [ ] `internal/converter/converter.go` — tool name added to `SupportedTools`
-- [ ] `internal/installer/installer.go` — case added in `DestinationDir`
+- [ ] `internal/installer/installer.go` — case added in `DestinationDir` (with `// handles own multi-dir logic` comment for dual-scope)
 - [ ] `cmd/root.go` — `--tool` flag description updated
-- [ ] `internal/converter/<tool>_test.go` — all required test cases present
+- [ ] `internal/converter/<tool>_test.go` — starts with `//nolint:testpackage`, all required test cases present
+- [ ] `README.md` — row added to Supported Tools table
 - [ ] `go test ./...` — all tests pass
+- [ ] `make lint` — 0 issues
 - [ ] Paths verified for macOS, Linux, and Windows

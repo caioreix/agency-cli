@@ -24,10 +24,10 @@ agency-cli --tool cursor
 
 The TUI guides you through a simple multi-step flow:
 
-1. **Browse agents** – navigate by category or search across all agents
-2. **Select a tool** – choose your target agentic tool
-3. **Choose scope** – local (project) or global (user), when applicable
-4. **Install** – the agent is converted and placed in the right location
+1. **Browse agents** - navigate by category or search across all agents
+2. **Select a tool** - choose your target agentic tool
+3. **Choose scope** - local (project) or global (user), when applicable
+4. **Install** - the agent is converted and placed in the right location
 
 ### Keyboard shortcuts
 
@@ -89,16 +89,17 @@ agency-cli tools
 
 | Tool | Destination | Scope |
 |------|-------------|-------|
-| claude-code | `~/.claude/agents/` | user |
-| copilot | `~/.github/agents/` + `~/.copilot/agents/` | user |
+| claude-code | `.claude/agents/ + ~/.claude/agents/` | project + user |
+| copilot | `.github/agents/ + ~/.copilot/agents/` | project + user |
 | cursor | `.cursor/rules/` | project |
 | windsurf | `.windsurfrules` | project |
 | aider | `CONVENTIONS.md` | project |
-| opencode | `.opencode/agents/` | project |
+| opencode | `.opencode/agents/ + ~/.config/opencode/agents/` | project + user |
 | openclaw | `~/.openclaw/agency-agents/` | user |
 | antigravity | `~/.gemini/antigravity/skills/` | user |
-| gemini-cli | `~/.gemini/extensions/agency-agents/` | user |
-| qwen | `.qwen/agents/` | project |
+| gemini-cli | `.gemini/extensions/ + ~/.gemini/extensions/` | project + user |
+| kimi-code | `.kimi/agents/ + ~/.kimi/agents/` | project + user |
+| qwen | `.qwen/agents/ + ~/.qwen/agents/` | project + user |
 
 ## How it works
 
