@@ -441,16 +441,10 @@ func (m Model) viewAgents() string {
 	} else if w > 90 {
 		nameW = 32
 	}
-	vibeW := w - nameW - 5
-	if vibeW < 10 {
-		vibeW = 10
-	}
+	vibeW := max(w-nameW-5, 10)
 
 	vh := m.listHeight()
-	end := m.offset + vh
-	if end > len(rows) {
-		end = len(rows)
-	}
+	end := min(m.offset+vh, len(rows))
 
 	var sb strings.Builder
 	sb.WriteString(catLine + "\n")
