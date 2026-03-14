@@ -2,6 +2,48 @@
 
 CLI tool to browse and install AI agents from [The Agency](https://github.com/msitarzewski/agency-agents) into your preferred agentic tool.
 
+## Preview
+
+https://github.com/caioreix/agency-cli/raw/main/assets/preview.mp4
+
+## Interactive TUI
+
+The easiest way to browse and install agents is through the interactive TUI. Just run:
+
+```bash
+agency-cli
+```
+
+Or with a pre-selected tool:
+
+```bash
+agency-cli --tool cursor
+```
+
+### Workflow
+
+The TUI guides you through a simple multi-step flow:
+
+1. **Browse agents** – navigate by category or search across all agents
+2. **Select a tool** – choose your target agentic tool
+3. **Choose scope** – local (project) or global (user), when applicable
+4. **Install** – the agent is converted and placed in the right location
+
+### Keyboard shortcuts
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` or `j` / `k` | Navigate list |
+| `←` / `→` | Switch categories |
+| Type any character | Filter / search |
+| `Backspace` | Delete last filter character |
+| `Esc` | Clear filter / go back |
+| `Enter` | Confirm selection |
+| `q` | Quit (when not filtering) |
+| `Ctrl+C` | Quit at any time |
+
+> **Tip:** Filtering is smart — results are sorted by relevance: exact name match → prefix → contains → description/vibe/category.
+
 ## Installation
 
 ```bash
