@@ -38,8 +38,8 @@ func TestDestinationDir(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.tool, func(t *testing.T) {
 			t.Parallel()
-			got, err := installer.DestinationDir(tt.tool)
-			require.NoError(t, err)
+			got, gotErr := installer.DestinationDir(tt.tool)
+			require.NoError(t, gotErr)
 			assert.Equal(t, tt.want, got)
 		})
 	}

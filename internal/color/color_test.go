@@ -1,3 +1,4 @@
+//nolint:testpackage // tests unexported functions parseHex and nearestAnsi
 package color
 
 import (

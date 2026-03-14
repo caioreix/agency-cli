@@ -51,7 +51,8 @@ func (c *opencode) Convert(a *agent.Agent, _ string, scope string) ([]string, er
 		"color: '" + color + "'\n" +
 		"---\n" + a.Body
 
-	if writeErr := os.WriteFile(outFile, []byte(content), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
+	writeErr := os.WriteFile(outFile, []byte(content), 0o644) //nolint:gosec // G306: world-readable
+	if writeErr != nil {
 		return nil, writeErr
 	}
 

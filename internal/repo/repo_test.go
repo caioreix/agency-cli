@@ -36,5 +36,5 @@ func TestCacheDir_ContainsCacheSegment(t *testing.T) {
 	dir, err := repo.CacheDir()
 	require.NoError(t, err)
 	// Path must contain "agency-cli" as a directory segment.
-	assert.Contains(t, dir, filepath.Join("agency-cli"))
+	assert.Contains(t, dir, "agency-cli")
 }

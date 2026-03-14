@@ -41,7 +41,8 @@ func (c *kimiCode) Convert(a *agent.Agent, _ string, scope string) ([]string, er
 	}
 
 	systemFile := filepath.Join(dir, a.Slug+".md")
-	if writeErr := os.WriteFile(systemFile, []byte(a.Body), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
+	writeErr := os.WriteFile(systemFile, []byte(a.Body), 0o644) //nolint:gosec // G306: world-readable
+	if writeErr != nil {
 		return nil, writeErr
 	}
 
@@ -53,8 +54,9 @@ func (c *kimiCode) Convert(a *agent.Agent, _ string, scope string) ([]string, er
 		"  extend: default\n"
 
 	yamlFile := filepath.Join(dir, a.Slug+".yaml")
-	if writeErr := os.WriteFile(yamlFile, []byte(yamlContent), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
-		return nil, writeErr
+	writeYAMLErr := os.WriteFile(yamlFile, []byte(yamlContent), 0o644) //nolint:gosec // G306: world-readable
+	if writeYAMLErr != nil {
+		return nil, writeYAMLErr
 	}
 
 	return []string{yamlFile, systemFile}, nil

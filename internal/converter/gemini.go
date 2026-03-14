@@ -47,7 +47,8 @@ func (c *geminiCLI) Convert(a *agent.Agent, _ string, scope string) ([]string, e
 		"description: " + a.Description + "\n" +
 		"---\n" + a.Body
 
-	if writeErr := os.WriteFile(outFile, []byte(content), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
+	writeErr := os.WriteFile(outFile, []byte(content), 0o644) //nolint:gosec // G306: world-readable
+	if writeErr != nil {
 		return nil, writeErr
 	}
 
@@ -59,12 +60,12 @@ func (c *geminiCLI) Convert(a *agent.Agent, _ string, scope string) ([]string, e
   "version": "1.0.0"
 }
 `
-		if writeErr := os.WriteFile( //nolint:gosec // G306: world-readable
+		if manifestErr := os.WriteFile( //nolint:gosec // G306: world-readable
 			manifestFile,
 			[]byte(manifest),
 			0o644,
-		); writeErr != nil {
-			return nil, writeErr
+		); manifestErr != nil {
+			return nil, manifestErr
 		}
 	}
 

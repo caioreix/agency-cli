@@ -1,3 +1,4 @@
+//nolint:testpackage // shares newTestAgent helper and tests unexported functions
 package converter
 
 import (
@@ -23,10 +24,10 @@ func TestKimiCode_Convert_Local(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, files, 2)
 
-	expectedYAML := filepath.Join(cwd, ".kimi", "agents", "test-agent.yaml")
-	expectedMD := filepath.Join(cwd, ".kimi", "agents", "test-agent.md")
-	assert.Equal(t, expectedYAML, files[0])
-	assert.Equal(t, expectedMD, files[1])
+	wantConfigFile := filepath.Join(cwd, ".kimi", "agents", "test-agent.yaml")
+	wantMDFile := filepath.Join(cwd, ".kimi", "agents", "test-agent.md")
+	assert.Equal(t, wantConfigFile, files[0])
+	assert.Equal(t, wantMDFile, files[1])
 
 	yamlContent, err := os.ReadFile(files[0])
 	require.NoError(t, err)
@@ -54,8 +55,8 @@ func TestKimiCode_Convert_Default(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, files, 2)
 
-	expectedYAML := filepath.Join(cwd, ".kimi", "agents", "test-agent.yaml")
-	assert.Equal(t, expectedYAML, files[0])
+	wantConfigFile := filepath.Join(cwd, ".kimi", "agents", "test-agent.yaml")
+	assert.Equal(t, wantConfigFile, files[0])
 }
 
 func TestKimiCode_Convert_Global(t *testing.T) {
@@ -70,10 +71,10 @@ func TestKimiCode_Convert_Global(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, files, 2)
 
-	expectedYAML := filepath.Join(home, ".kimi", "agents", "test-agent.yaml")
-	expectedMD := filepath.Join(home, ".kimi", "agents", "test-agent.md")
-	assert.Equal(t, expectedYAML, files[0])
-	assert.Equal(t, expectedMD, files[1])
+	wantConfigFile := filepath.Join(home, ".kimi", "agents", "test-agent.yaml")
+	wantMDFile := filepath.Join(home, ".kimi", "agents", "test-agent.md")
+	assert.Equal(t, wantConfigFile, files[0])
+	assert.Equal(t, wantMDFile, files[1])
 
 	t.Cleanup(func() {
 		os.Remove(files[0])

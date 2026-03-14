@@ -1,3 +1,4 @@
+//nolint:testpackage // shares newTestAgent helper and tests unexported functions
 package converter
 
 import (
