@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"text/tabwriter"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/caioreix/agency-cli/internal/agent"
+	"github.com/caioreix/agency-cli/internal/color"
 	"github.com/caioreix/agency-cli/internal/repo"
 	"github.com/spf13/cobra"
 )
@@ -27,23 +28,96 @@ var listCmd = &cobra.Command{
 			return fmt.Errorf("failed to list agents: %w", err)
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "CATEGORY\tAGENT\tDESCRIPTION")
+		type row struct {
+			category string
+			name     string
+			vibe     string
+			agentColor string
+		}
 
+		var rows []row
 		for _, a := range agents {
 			if categoryFlag != "" && a.Category != categoryFlag {
 				continue
 			}
 
-			desc := a.Description
-			if len(desc) > 70 {
-				desc = desc[:67] + "..."
+			name := a.Name
+			if a.Emoji != "" {
+				name = a.Emoji + " " + name
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\n", a.Category, a.Name, desc)
+
+			vibe := a.Vibe
+			if vibe == "" {
+				vibe = a.Description
+			}
+
+			rows = append(rows, row{
+				category:   a.Category,
+				name:       name,
+				vibe:       vibe,
+				agentColor: a.Color,
+			})
 		}
 
-		return w.Flush()
+		// Compute visible column widths (no ANSI codes)
+		w0, w1 := utf8.RuneCountInString("CATEGORY"), utf8.RuneCountInString("AGENT")
+		for _, r := range rows {
+			if n := utf8.RuneCountInString(r.category); n > w0 {
+				w0 = n
+			}
+			if n := utf8.RuneCountInString(r.name); n > w1 {
+				w1 = n
+			}
+		}
+
+		// Cap vibe width to keep lines reasonable
+		const maxVibe = 60
+
+		sep := color.ApplyDim(strings.Repeat("─", w0+2) + "┼" + strings.Repeat("─", w1+2) + "┼" + strings.Repeat("─", maxVibe+2))
+
+		// Header
+		header := fmt.Sprintf(" %-*s │ %-*s │ %s",
+			w0, color.ApplyBold("CATEGORY"),
+			w1, color.ApplyBold("AGENT"),
+			color.ApplyBold("VIBE"),
+		)
+		fmt.Println(header)
+		fmt.Println(sep)
+
+		// Rows
+		prevCat := ""
+		for _, r := range rows {
+			// Add separator between categories
+			if r.category != prevCat && prevCat != "" {
+				fmt.Println(sep)
+			}
+			prevCat = r.category
+
+			vibe := r.vibe
+			if utf8.RuneCountInString(vibe) > maxVibe {
+				runes := []rune(vibe)
+				vibe = string(runes[:maxVibe-3]) + "..."
+			}
+
+			nameColored := color.Apply(r.name, r.agentColor)
+			catDim := color.ApplyDim(r.category)
+
+			fmt.Printf(" %-*s │ %-*s │ %s\n",
+				w0+visiblePadding(r.category, catDim),
+				catDim,
+				w1+visiblePadding(r.name, nameColored),
+				nameColored,
+				vibe,
+			)
+		}
+
+		return nil
 	},
+}
+
+// visiblePadding returns extra padding needed to compensate for invisible ANSI codes.
+func visiblePadding(plain, withCodes string) int {
+	return len(withCodes) - len(plain)
 }
 
 func init() {
