@@ -9,22 +9,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClaudeCode_Convert(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	a := newTestAgent()
+// TestClaudeCode_Convert_Local uses t.Chdir which is incompatible with t.Parallel().
+func TestClaudeCode_Convert_Local(t *testing.T) {
+	t.Chdir(t.TempDir())
 
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	a := newTestAgent()
 	c, err := Get("claude-code")
 	require.NoError(t, err)
 
-	files, err := c.Convert(a, dir, ScopeLocal)
+	files, err := c.Convert(a, "", ScopeLocal)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
 
+	expected := filepath.Join(cwd, ".claude", "agents", "test-agent.md")
+	assert.Equal(t, expected, files[0])
+
 	content, err := os.ReadFile(files[0])
 	require.NoError(t, err)
-
-	assert.Equal(t, filepath.Join(dir, "test-agent.md"), files[0])
 	assert.Contains(t, string(content), "name: Test Agent")
 	assert.Contains(t, string(content), "description: A test agent for unit tests")
 	assert.Contains(t, string(content), "color: cyan")
@@ -32,11 +36,38 @@ func TestClaudeCode_Convert(t *testing.T) {
 	assert.Contains(t, string(content), "## Mission")
 }
 
-func TestClaudeCode_Convert_IgnoresScope(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
+// TestClaudeCode_Convert_Default uses t.Chdir which is incompatible with t.Parallel().
+func TestClaudeCode_Convert_Default(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	a := newTestAgent()
 	c, _ := Get("claude-code")
 
-	_, err := c.Convert(newTestAgent(), dir, ScopeGlobal)
-	assert.NoError(t, err)
+	files, err := c.Convert(a, "", ScopeDefault)
+	require.NoError(t, err)
+	require.Len(t, files, 1)
+
+	expected := filepath.Join(cwd, ".claude", "agents", "test-agent.md")
+	assert.Equal(t, expected, files[0])
+}
+
+func TestClaudeCode_Convert_Global(t *testing.T) {
+	t.Parallel()
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+
+	a := newTestAgent()
+	c, _ := Get("claude-code")
+
+	files, err := c.Convert(a, "", ScopeGlobal)
+	require.NoError(t, err)
+	require.Len(t, files, 1)
+
+	expected := filepath.Join(home, ".claude", "agents", "test-agent.md")
+	assert.Equal(t, expected, files[0])
+
+	t.Cleanup(func() { os.Remove(files[0]) })
 }

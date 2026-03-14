@@ -22,7 +22,7 @@ func TestDestinationDir(t *testing.T) {
 		tool string
 		want string
 	}{
-		{"claude-code", filepath.Join(home, ".claude", "agents")},
+		{"claude-code", filepath.Join(cwd, ".claude", "agents")},
 		{"copilot", filepath.Join(cwd, ".github", "agents")},
 		{"cursor", filepath.Join(cwd, ".cursor", "rules")},
 		{"windsurf", cwd},
@@ -31,6 +31,7 @@ func TestDestinationDir(t *testing.T) {
 		{"openclaw", filepath.Join(home, ".openclaw", "agency-agents")},
 		{"antigravity", filepath.Join(home, ".gemini", "antigravity", "skills")},
 		{"gemini-cli", filepath.Join(home, ".gemini", "extensions", "agency-agents")},
+		{"kimi-code", filepath.Join(cwd, ".kimi", "agents")},
 		{"qwen", filepath.Join(cwd, ".qwen", "agents")},
 	}
 

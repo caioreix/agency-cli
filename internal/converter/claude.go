@@ -14,17 +14,34 @@ func init() { //nolint:gochecknoinits // required by cobra/converter
 }
 
 func (c *claudeCode) Name() string          { return "Claude Code" }
-func (c *claudeCode) Description() string   { return "~/.claude/agents/" }
-func (c *claudeCode) IsProjectScoped() bool { return false }
+func (c *claudeCode) Description() string   { return ".claude/agents/ + ~/.claude/agents/" }
+func (c *claudeCode) IsProjectScoped() bool { return true }
 
-func (c *claudeCode) Convert(a *agent.Agent, destDir string, _ string) ([]string, error) {
-	// claude-code installs globally regardless of scope
-	if err := os.MkdirAll(destDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
+func (c *claudeCode) Convert(a *agent.Agent, _ string, scope string) ([]string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
 		return nil, err
 	}
 
-	// Claude Code uses the original .md files with frontmatter as-is
-	outFile := filepath.Join(destDir, a.Slug+".md")
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	var dir string
+	switch scope {
+	case ScopeGlobal:
+		dir = filepath.Join(home, ".claude", "agents")
+	default:
+		dir = filepath.Join(cwd, ".claude", "agents")
+	}
+
+	if mkdirErr := os.MkdirAll(dir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
+		return nil, mkdirErr
+	}
+
+	// Claude Code uses .md files with YAML frontmatter
+	outFile := filepath.Join(dir, a.Slug+".md")
 	content := "---\n" +
 		"name: " + a.Name + "\n" +
 		"description: " + a.Description + "\n"
@@ -39,8 +56,8 @@ func (c *claudeCode) Convert(a *agent.Agent, destDir string, _ string) ([]string
 	}
 	content += "---\n" + a.Body
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
-		return nil, err
+	if writeErr := os.WriteFile(outFile, []byte(content), 0o644); writeErr != nil { //nolint:gosec // G306: world-readable
+		return nil, writeErr
 	}
 
 	return []string{outFile}, nil

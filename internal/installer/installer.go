@@ -40,7 +40,8 @@ func DestinationDir(toolName string) (string, error) {
 
 	switch toolName {
 	case "claude-code":
-		return filepath.Join(home, ".claude", "agents"), nil
+		// claude-code handles its own multi-dir logic in the converter
+		return filepath.Join(cwd, ".claude", "agents"), nil
 	case "copilot":
 		// Copilot handles its own multi-dir logic in the converter
 		return filepath.Join(cwd, ".github", "agents"), nil

@@ -63,7 +63,7 @@ func TestConverterMetadata(t *testing.T) {
 		key        string
 		wantScoped bool
 	}{
-		{"claude-code", false},
+		{"claude-code", true},
 		{"copilot", true},
 		{"cursor", true},
 		{"windsurf", true},
