@@ -57,19 +57,23 @@ type row struct {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 var (
-	accentColor = lipgloss.Color("205")
+	accentColor = lipgloss.Color("205") // seleção
 	dimColor    = lipgloss.Color("240")
 
-	selStyle     = lipgloss.NewStyle().Foreground(accentColor).Bold(true)
-	dimStyle     = lipgloss.NewStyle().Foreground(dimColor)
+	selStyle = lipgloss.NewStyle().Foreground(accentColor).Bold(true)
+	dimStyle = lipgloss.NewStyle().Foreground(dimColor)
+
 	successStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true)
 	errStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Bold(true)
-	fileStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
-	arrowStyle   = lipgloss.NewStyle().Foreground(accentColor)
-	filterStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))
-	catStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("214")).Bold(true)
-	helpStyle    = lipgloss.NewStyle().Foreground(dimColor)
-	breadStyle   = lipgloss.NewStyle().Foreground(dimColor)
+
+	fileStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
+	arrowStyle = lipgloss.NewStyle().Foreground(accentColor)
+
+	filterStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("11")) // busca
+	catStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("39")).Bold(true)
+
+	helpStyle  = lipgloss.NewStyle().Foreground(dimColor)
+	breadStyle = lipgloss.NewStyle().Foreground(dimColor)
 )
 
 // ─── Scope option ─────────────────────────────────────────────────────────────
