@@ -17,7 +17,8 @@ func (c *claudeCode) Name() string        { return "Claude Code" }
 func (c *claudeCode) Description() string  { return "~/.claude/agents/" }
 func (c *claudeCode) IsProjectScoped() bool { return false }
 
-func (c *claudeCode) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *claudeCode) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	// claude-code installs globally regardless of scope
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return nil, err
 	}

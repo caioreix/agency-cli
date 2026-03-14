@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,10 @@ func (c *windsurf) Name() string        { return "Windsurf" }
 func (c *windsurf) Description() string  { return ".windsurfrules (project-scoped)" }
 func (c *windsurf) IsProjectScoped() bool { return true }
 
-func (c *windsurf) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *windsurf) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	if scope == ScopeGlobal {
+		return nil, fmt.Errorf("windsurf is project-scoped; --scope global is not supported")
+	}
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return nil, err
 	}

@@ -17,7 +17,8 @@ func (c *antigravity) Name() string        { return "Antigravity" }
 func (c *antigravity) Description() string  { return "~/.gemini/antigravity/skills/" }
 func (c *antigravity) IsProjectScoped() bool { return false }
 
-func (c *antigravity) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *antigravity) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	// antigravity installs globally regardless of scope
 	slug := "agency-" + a.Slug
 	skillDir := filepath.Join(destDir, slug)
 	if err := os.MkdirAll(skillDir, 0o755); err != nil {

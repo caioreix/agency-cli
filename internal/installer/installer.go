@@ -8,7 +8,7 @@ import (
 	"github.com/caioreix/agency-cli/internal/converter"
 )
 
-func Install(a *agent.Agent, toolName string) ([]string, error) {
+func Install(a *agent.Agent, toolName string, global bool) ([]string, error) {
 	conv, err := converter.Get(toolName)
 	if err != nil {
 		return nil, err
@@ -19,7 +19,12 @@ func Install(a *agent.Agent, toolName string) ([]string, error) {
 		return nil, err
 	}
 
-	return conv.Convert(a, destDir)
+	scope := converter.ScopeLocal
+	if global {
+		scope = converter.ScopeGlobal
+	}
+
+	return conv.Convert(a, destDir, scope)
 }
 
 func DestinationDir(toolName string) (string, error) {
@@ -38,7 +43,7 @@ func DestinationDir(toolName string) (string, error) {
 		return filepath.Join(home, ".claude", "agents"), nil
 	case "copilot":
 		// Copilot handles its own multi-dir logic in the converter
-		return filepath.Join(home, ".github", "agents"), nil
+		return filepath.Join(cwd, ".github", "agents"), nil
 	case "cursor":
 		return filepath.Join(cwd, ".cursor", "rules"), nil
 	case "windsurf":

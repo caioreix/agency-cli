@@ -18,7 +18,8 @@ func (c *openclaw) Name() string        { return "OpenClaw" }
 func (c *openclaw) Description() string  { return "~/.openclaw/agency-agents/" }
 func (c *openclaw) IsProjectScoped() bool { return false }
 
-func (c *openclaw) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *openclaw) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	// openclaw installs globally regardless of scope
 	agentDir := filepath.Join(destDir, a.Slug)
 	if err := os.MkdirAll(agentDir, 0o755); err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -17,7 +18,10 @@ func (c *qwen) Name() string        { return "Qwen Code" }
 func (c *qwen) Description() string  { return ".qwen/agents/ (project-scoped)" }
 func (c *qwen) IsProjectScoped() bool { return true }
 
-func (c *qwen) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *qwen) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	if scope == ScopeGlobal {
+		return nil, fmt.Errorf("qwen is project-scoped; --scope global is not supported")
+	}
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return nil, err
 	}

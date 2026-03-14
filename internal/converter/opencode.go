@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,10 @@ func (c *opencode) Name() string        { return "OpenCode" }
 func (c *opencode) Description() string  { return ".opencode/agents/ (project-scoped)" }
 func (c *opencode) IsProjectScoped() bool { return true }
 
-func (c *opencode) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *opencode) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	if scope == ScopeGlobal {
+		return nil, fmt.Errorf("opencode is project-scoped; --scope global is not supported")
+	}
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return nil, err
 	}

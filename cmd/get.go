@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var globalFlag bool
+
 var getCmd = &cobra.Command{
 	Use:   "get <agent-slug>",
 	Short: "Download, convert and install an agent",
@@ -34,7 +36,7 @@ var getCmd = &cobra.Command{
 		}
 
 		fmt.Printf("⏳ Converting \"%s\" for %s...\n", a.Name, toolFlag)
-		files, err := installer.Install(a, toolFlag)
+		files, err := installer.Install(a, toolFlag, globalFlag)
 		if err != nil {
 			return fmt.Errorf("failed to install agent: %w", err)
 		}
@@ -49,5 +51,6 @@ var getCmd = &cobra.Command{
 }
 
 func init() {
+	getCmd.Flags().BoolVarP(&globalFlag, "global", "g", false, "install to global location instead of current project")
 	rootCmd.AddCommand(getCmd)
 }

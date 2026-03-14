@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -17,7 +18,10 @@ func (c *aider) Name() string        { return "Aider" }
 func (c *aider) Description() string  { return "CONVENTIONS.md (project-scoped)" }
 func (c *aider) IsProjectScoped() bool { return true }
 
-func (c *aider) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *aider) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	if scope == ScopeGlobal {
+		return nil, fmt.Errorf("aider is project-scoped; --scope global is not supported")
+	}
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return nil, err
 	}

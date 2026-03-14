@@ -14,10 +14,10 @@ func init() {
 }
 
 func (c *copilot) Name() string        { return "Copilot" }
-func (c *copilot) Description() string  { return "~/.github/agents/ + ~/.copilot/agents/" }
-func (c *copilot) IsProjectScoped() bool { return false }
+func (c *copilot) Description() string  { return ".github/agents/ + ~/.copilot/agents/" }
+func (c *copilot) IsProjectScoped() bool { return true }
 
-func (c *copilot) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *copilot) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
 	// Copilot uses original .md files with frontmatter, copied to two locations
 	content := "---\n" +
 		"name: " + a.Name + "\n" +
@@ -38,9 +38,17 @@ func (c *copilot) Convert(a *agent.Agent, destDir string) ([]string, error) {
 		return nil, err
 	}
 
-	dirs := []string{
-		filepath.Join(home, ".github", "agents"),
-		filepath.Join(home, ".copilot", "agents"),
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	var dirs []string
+	switch scope {
+	case ScopeGlobal:
+		dirs = []string{filepath.Join(home, ".copilot", "agents")}
+	default:
+		dirs = []string{filepath.Join(cwd, ".github", "agents")}
 	}
 
 	var files []string

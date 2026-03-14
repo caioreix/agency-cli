@@ -17,7 +17,8 @@ func (c *geminiCLI) Name() string        { return "Gemini CLI" }
 func (c *geminiCLI) Description() string  { return "~/.gemini/extensions/agency-agents/" }
 func (c *geminiCLI) IsProjectScoped() bool { return false }
 
-func (c *geminiCLI) Convert(a *agent.Agent, destDir string) ([]string, error) {
+func (c *geminiCLI) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+	// gemini-cli installs globally regardless of scope
 	skillDir := filepath.Join(destDir, "skills", a.Slug)
 	if err := os.MkdirAll(skillDir, 0o755); err != nil {
 		return nil, err

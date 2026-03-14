@@ -6,8 +6,14 @@ import (
 	"github.com/caioreix/agency-cli/internal/agent"
 )
 
+const (
+	ScopeDefault = ""
+	ScopeLocal   = "local"
+	ScopeGlobal  = "global"
+)
+
 type Converter interface {
-	Convert(a *agent.Agent, destDir string) ([]string, error)
+	Convert(a *agent.Agent, destDir string, scope string) ([]string, error)
 	Name() string
 	Description() string
 	IsProjectScoped() bool
