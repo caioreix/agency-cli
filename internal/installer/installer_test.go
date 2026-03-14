@@ -6,18 +6,17 @@ import (
 	"testing"
 
 	"github.com/caioreix/agency-cli/internal/installer"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDestinationDir(t *testing.T) {
+	t.Parallel()
 	home, err := os.UserHomeDir()
-	if err != nil {
-		t.Fatalf("os.UserHomeDir: %v", err)
-	}
+	require.NoError(t, err)
 
 	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("os.Getwd: %v", err)
-	}
+	require.NoError(t, err)
 
 	tests := []struct {
 		tool string
@@ -37,23 +36,17 @@ func TestDestinationDir(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.tool, func(t *testing.T) {
+			t.Parallel()
 			got, err := installer.DestinationDir(tt.tool)
-			if err != nil {
-				t.Fatalf("DestinationDir(%q) returned unexpected error: %v", tt.tool, err)
-			}
-			if got != tt.want {
-				t.Errorf("DestinationDir(%q)\n  got:  %s\n  want: %s", tt.tool, got, tt.want)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
 func TestDestinationDir_Unknown(t *testing.T) {
+	t.Parallel()
 	got, err := installer.DestinationDir("unknown-tool")
-	if err != nil {
-		t.Fatalf("DestinationDir(unknown) returned unexpected error: %v", err)
-	}
-	if got != "" {
-		t.Errorf("DestinationDir(unknown) = %q, want empty string", got)
-	}
+	require.NoError(t, err)
+	assert.Empty(t, got)
 }

@@ -30,13 +30,13 @@ hooks: ## Install lefthook git hooks
 
 build: ## Build the binary into ./bin/
 	@mkdir -p $(BUILD_DIR)
-	go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY) .
+	@go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY) .
 
 run: ## Run the application (usage: make run ARGS="list --category engineering")
-	go run . $(ARGS)
+	@go run . $(ARGS)
 
 install: ## Install the binary to $GOPATH/bin
-	go install $(LDFLAGS) .
+	@go install $(LDFLAGS) .
 
 clean: ## Remove build artifacts
 	@rm -rf $(BUILD_DIR)
@@ -44,26 +44,26 @@ clean: ## Remove build artifacts
 # ── Quality ───────────────────────────────────────────────────────────────────
 
 test: ## Run all tests
-	go test ./...
+	@gotestsum --format pkgname-and-test-fails --max-fails=5 -- -race -cover -failfast -count=1 ./...
 
 test-verbose: ## Run all tests with verbose output
-	go test -v ./...
+	@go test -v ./...
 
 lint: ## Run golangci-lint
-	golangci-lint run ./...
+	@golangci-lint run ./...
 
 fmt: ## Format all Go source files
-	gofmt -w .
+	@gofmt -w .
 
 vet: ## Run go vet
-	go vet ./...
+	@go vet ./...
 
 fix: ## Run go fix
-	go fix ./...
+	@go fix ./...
 
 tidy: ## Tidy and verify go modules
-	go mod tidy
-	go mod verify
+	@go mod tidy
+	@go mod verify
 
 check: vet lint ## Run vet and lint
 
