@@ -46,6 +46,29 @@ The TUI guides you through a simple multi-step flow:
 
 ## Installation
 
+### Linux / macOS
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/caioreix/agency-cli/main/install.sh | sh
+```
+
+The script auto-detects your OS and architecture, downloads the right binary from the [latest release](https://github.com/caioreix/agency-cli/releases/latest), and installs it to `/usr/local/bin` (requires sudo) or `$HOME/.local/bin` as a fallback.
+
+### Windows (PowerShell)
+
+```powershell
+$url = "https://github.com/caioreix/agency-cli/releases/latest/download/agency-cli-windows-amd64.exe"
+$dest = "$env:LOCALAPPDATA\Programs\agency-cli.exe"
+New-Item -ItemType Directory -Force -Path (Split-Path $dest) | Out-Null
+Invoke-WebRequest -Uri $url -OutFile $dest
+# Add to PATH for current user (run once)
+[Environment]::SetEnvironmentVariable("PATH", "$env:PATH;$(Split-Path $dest)", "User")
+```
+
+Restart your terminal after running the above so the updated PATH takes effect.
+
+### Go developers
+
 ```bash
 go install github.com/caioreix/agency-cli@latest
 ```
