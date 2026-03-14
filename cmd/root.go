@@ -13,6 +13,7 @@ var rootCmd = &cobra.Command{
 	Use:   "agency-cli",
 	Short: "CLI to browse and install agents from The Agency",
 	Long:  "agency-cli lets you list, download, and install AI agents from the agency-agents repository into your preferred tool (Cursor, Copilot, Windsurf, etc.).",
+	RunE:  runTUI,
 }
 
 func Execute() {
