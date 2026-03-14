@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	Reset = "\033[0m"
-	Bold  = "\033[1m"
-	Dim   = "\033[2m"
+	Reset       = "\033[0m"
+	Bold        = "\033[1m"
+	Dim         = "\033[2m"
+	hexColorLen = 6
 )
 
-var ansiMap = map[string]string{
+var ansiMap = map[string]string{ //nolint:gochecknoglobals // Go does not support const maps
 	"cyan":          "\033[96m",
 	"blue":          "\033[34m",
 	"green":         "\033[32m",
@@ -37,13 +38,13 @@ var ansiMap = map[string]string{
 	"fuchsia":       "\033[95m",
 }
 
-// Basic ANSI colors as RGB for nearest-color fallback
+// Basic ANSI colors as RGB for nearest-color fallback.
 type basicColor struct {
 	code    string
 	r, g, b uint8
 }
 
-var basicColors = []basicColor{
+var basicColors = []basicColor{ //nolint:gochecknoglobals // Go does not support const slices
 	{"\033[90m", 80, 80, 80},   // gray
 	{"\033[91m", 255, 80, 80},  // red
 	{"\033[92m", 80, 255, 80},  // green
@@ -74,9 +75,9 @@ func truecolorSupported() bool {
 	return ct == "truecolor" || ct == "24bit"
 }
 
-func parseHex(hex string) (r, g, b uint8, ok bool) {
+func parseHex(hex string) (uint8, uint8, uint8, bool) {
 	hex = strings.TrimPrefix(strings.TrimSpace(hex), "#")
-	if len(hex) != 6 {
+	if len(hex) != hexColorLen {
 		return 0, 0, 0, false
 	}
 	rv, err1 := strconv.ParseUint(hex[0:2], 16, 8)

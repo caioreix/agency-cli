@@ -23,6 +23,8 @@ func Execute() {
 	}
 }
 
-func init() {
-	rootCmd.PersistentFlags().StringVarP(&toolFlag, "tool", "t", "", "target tool (claude-code, copilot, cursor, windsurf, aider, opencode, openclaw, antigravity, gemini-cli, qwen)")
+func init() { //nolint:gochecknoinits // required by cobra/converter
+	const toolDesc = "target tool (claude-code, copilot, cursor, windsurf, " +
+		"aider, opencode, openclaw, antigravity, gemini-cli, qwen)"
+	rootCmd.PersistentFlags().StringVarP(&toolFlag, "tool", "t", "", toolDesc)
 }

@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -28,7 +29,7 @@ func EnsureRepo() (string, error) {
 		return "", err
 	}
 
-	if _, err := os.Stat(filepath.Join(dir, ".git")); os.IsNotExist(err) {
+	if _, statErr := os.Stat(filepath.Join(dir, ".git")); os.IsNotExist(statErr) {
 		return dir, cloneRepo(dir)
 	}
 
@@ -41,12 +42,12 @@ func Sync() (string, int, error) {
 		return "", 0, err
 	}
 
-	if _, err := os.Stat(filepath.Join(dir, ".git")); os.IsNotExist(err) {
-		if err := cloneRepo(dir); err != nil {
-			return dir, 0, err
+	if _, statErr := os.Stat(filepath.Join(dir, ".git")); os.IsNotExist(statErr) {
+		if cloneErr := cloneRepo(dir); cloneErr != nil {
+			return dir, 0, cloneErr
 		}
-		count, err := commitCount(dir)
-		return dir, count, err
+		count, countErr := commitCount(dir)
+		return dir, count, countErr
 	}
 
 	beforeHash, err := currentHash(dir)
@@ -54,12 +55,12 @@ func Sync() (string, int, error) {
 		return dir, 0, err
 	}
 
-	cmd := exec.Command("git", "pull", "--ff-only")
+	cmd := exec.CommandContext(context.Background(), "git", "pull", "--ff-only")
 	cmd.Dir = dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return dir, 0, fmt.Errorf("git pull failed: %w", err)
+	if runErr := cmd.Run(); runErr != nil {
+		return dir, 0, fmt.Errorf("git pull failed: %w", runErr)
 	}
 
 	afterHash, err := currentHash(dir)
@@ -77,11 +78,11 @@ func Sync() (string, int, error) {
 
 func cloneRepo(dir string) error {
 	parent := filepath.Dir(dir)
-	if err := os.MkdirAll(parent, 0o755); err != nil {
+	if err := os.MkdirAll(parent, 0o750); err != nil {
 		return fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
-	cmd := exec.Command("git", "clone", "--depth=1", repoURL, dir)
+	cmd := exec.CommandContext(context.Background(), "git", "clone", "--depth=1", repoURL, dir)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -92,7 +93,7 @@ func cloneRepo(dir string) error {
 }
 
 func currentHash(dir string) (string, error) {
-	cmd := exec.Command("git", "rev-parse", "HEAD")
+	cmd := exec.CommandContext(context.Background(), "git", "rev-parse", "HEAD")
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
@@ -102,25 +103,30 @@ func currentHash(dir string) (string, error) {
 }
 
 func commitCount(dir string) (int, error) {
-	cmd := exec.Command("git", "rev-list", "--count", "HEAD")
+	cmd := exec.CommandContext(context.Background(), "git", "rev-list", "--count", "HEAD")
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
 		return 0, err
 	}
 	var count int
-	fmt.Sscanf(strings.TrimSpace(string(out)), "%d", &count)
+	if _, scanErr := fmt.Sscanf(strings.TrimSpace(string(out)), "%d", &count); scanErr != nil {
+		return 0, fmt.Errorf("failed to parse commit count: %w", scanErr)
+	}
 	return count, nil
 }
 
 func commitsBetween(dir, from, to string) (int, error) {
-	cmd := exec.Command("git", "rev-list", "--count", from+".."+to)
+	cmd := exec.CommandContext( //nolint:gosec // G204: git hashes are controlled
+		context.Background(), "git", "rev-list", "--count", from+".."+to)
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
 		return 0, err
 	}
 	var count int
-	fmt.Sscanf(strings.TrimSpace(string(out)), "%d", &count)
+	if _, scanErr := fmt.Sscanf(strings.TrimSpace(string(out)), "%d", &count); scanErr != nil {
+		return 0, fmt.Errorf("failed to parse commit count: %w", scanErr)
+	}
 	return count, nil
 }

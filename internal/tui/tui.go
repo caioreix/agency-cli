@@ -47,6 +47,30 @@ const (
 	rowCategory         // non-selectable section header
 )
 
+const (
+	keyEsc   = "esc"
+	keyDown  = "down"
+	keyEnter = "enter"
+)
+
+const (
+	defaultWidth   = 80
+	defaultHeight  = 24
+	minWidth       = 40
+	wideBreakpoint = 110
+	medBreakpoint  = 90
+	nameWWide      = 38
+	nameWMed       = 32
+	nameWDefault   = 28
+	vibeSubtract   = 5
+	descSubtract   = 8
+	minVibeWidth   = 10
+	listHeadHeight = 5
+	minListHeight  = 5
+	scoreContains  = 2
+	scoreHaystack  = 3
+)
+
 type row struct {
 	kind  rowKind
 	agent *agent.Agent
@@ -57,23 +81,23 @@ type row struct {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 var (
-	accentColor = lipgloss.Color("205") // seleção
-	dimColor    = lipgloss.Color("240")
+	accentColor = lipgloss.Color("205") //nolint:gochecknoglobals // lipgloss color
+	dimColor    = lipgloss.Color("240") //nolint:gochecknoglobals // lipgloss color
 
-	selStyle = lipgloss.NewStyle().Foreground(accentColor).Bold(true)
-	dimStyle = lipgloss.NewStyle().Foreground(dimColor)
+	selStyle = lipgloss.NewStyle().Foreground(accentColor).Bold(true) //nolint:gochecknoglobals // style
+	dimStyle = lipgloss.NewStyle().Foreground(dimColor)               //nolint:gochecknoglobals // style
 
-	successStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true)
-	errStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Bold(true)
+	successStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true) //nolint:gochecknoglobals // style
+	errStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Bold(true)  //nolint:gochecknoglobals // style
 
-	fileStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
-	arrowStyle = lipgloss.NewStyle().Foreground(accentColor)
+	fileStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("12")) //nolint:gochecknoglobals // style
+	arrowStyle = lipgloss.NewStyle().Foreground(accentColor)          //nolint:gochecknoglobals // style
 
-	filterStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("11")) // busca
-	catStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("39")).Bold(true)
+	filterStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))            //nolint:gochecknoglobals // style
+	catStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("39")).Bold(true) //nolint:gochecknoglobals // style
 
-	helpStyle  = lipgloss.NewStyle().Foreground(dimColor)
-	breadStyle = lipgloss.NewStyle().Foreground(dimColor)
+	helpStyle  = lipgloss.NewStyle().Foreground(dimColor) //nolint:gochecknoglobals // style
+	breadStyle = lipgloss.NewStyle().Foreground(dimColor) //nolint:gochecknoglobals // style
 )
 
 // ─── Scope option ─────────────────────────────────────────────────────────────
@@ -86,7 +110,7 @@ type scopeOpt struct {
 
 // ─── Category order ───────────────────────────────────────────────────────────
 
-var categoryOrder = []string{
+var categoryOrder = []string{ //nolint:gochecknoglobals // canonical category order, cannot be const
 	"design", "engineering", "game-development", "marketing",
 	"paid-media", "sales", "product", "project-management",
 	"testing", "support", "spatial-computing", "specialized",
@@ -127,7 +151,7 @@ func New() Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(accentColor)
-	return Model{step: stepLoading, spinner: s, width: 80, height: 24}
+	return Model{step: stepLoading, spinner: s, width: defaultWidth, height: defaultHeight}
 }
 
 // ─── Tea interface ────────────────────────────────────────────────────────────
@@ -138,7 +162,6 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		return m, nil
@@ -189,15 +212,17 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handleScopeKey(msg)
 	case stepDone, stepErr:
 		return m, tea.Quit
+	case stepLoading, stepInstalling:
+		// ignore key presses while loading or installing
 	}
 	return m, nil
 }
 
-func (m Model) handleAgentKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleAgentKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) { //nolint:gocognit,funlen // complex key handling
 	rows := m.visibleRows()
 
 	switch msg.String() {
-	case "esc":
+	case keyEsc:
 		if m.filter != "" {
 			m.filter = ""
 			m.cursor, m.offset = m.firstAgentRow(m.visibleRows()), 0
@@ -227,14 +252,14 @@ func (m Model) handleAgentKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case "up":
-		m.moveCursor(rows, -1)
+		m = m.moveCursor(rows, -1)
 		return m, nil
 
-	case "down":
-		m.moveCursor(rows, 1)
+	case keyDown:
+		m = m.moveCursor(rows, 1)
 		return m, nil
 
-	case "enter":
+	case keyEnter:
 		if m.cursor < len(rows) && rows[m.cursor].kind == rowAgent {
 			m.selectedAgent = rows[m.cursor].agent
 			m.step = stepTool
@@ -247,10 +272,10 @@ func (m Model) handleAgentKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.filter == "" {
 		switch msg.String() {
 		case "k":
-			m.moveCursor(rows, -1)
+			m = m.moveCursor(rows, -1)
 			return m, nil
 		case "j":
-			m.moveCursor(rows, 1)
+			m = m.moveCursor(rows, 1)
 			return m, nil
 		case "q":
 			return m, tea.Quit
@@ -272,7 +297,7 @@ func (m Model) handleAgentKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m *Model) moveCursor(rows []row, dir int) {
+func (m Model) moveCursor(rows []row, dir int) Model {
 	pos := m.cursor + dir
 	for pos >= 0 && pos < len(rows) {
 		if rows[pos].kind == rowAgent {
@@ -283,17 +308,18 @@ func (m *Model) moveCursor(rows []row, dir int) {
 			} else if m.cursor >= m.offset+vh {
 				m.offset = m.cursor - vh + 1
 			}
-			return
+			return m
 		}
 		pos += dir
 	}
+	return m
 }
 
-func (m Model) handleToolKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleToolKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) { //nolint:gocognit
 	tools := m.filteredTools()
 
 	switch msg.String() {
-	case "esc":
+	case keyEsc:
 		if m.toolFilter != "" {
 			m.toolFilter = ""
 			m.toolCursor = 0
@@ -325,13 +351,13 @@ func (m Model) handleToolKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case "down", "j":
+	case keyDown, "j":
 		if m.toolCursor < len(tools)-1 {
 			m.toolCursor++
 		}
 		return m, nil
 
-	case "enter":
+	case keyEnter:
 		if m.toolCursor < len(tools) {
 			m.selectedTool = tools[m.toolCursor].key
 			m.step = stepScope
@@ -356,17 +382,17 @@ func (m Model) handleToolKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m Model) handleScopeKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	scopes := m.scopeOptions()
 	switch msg.String() {
-	case "q", "esc":
+	case "q", keyEsc:
 		m.step = stepTool
 	case "up", "k":
 		if m.scopeCursor > 0 {
 			m.scopeCursor--
 		}
-	case "down", "j":
+	case keyDown, "j":
 		if m.scopeCursor < len(scopes)-1 {
 			m.scopeCursor++
 		}
-	case "enter":
+	case keyEnter:
 		if len(scopes) > 0 {
 			m.selectedGlobal = scopes[m.scopeCursor].global
 			m.step = stepInstalling
@@ -399,8 +425,8 @@ func (m Model) View() string {
 	return ""
 }
 
-func (m Model) viewAgents() string {
-	w := maxInt(m.width, 40)
+func (m Model) viewAgents() string { //nolint:gocognit,funlen // complex view with many rendering steps,funlen
+	w := maxInt(m.width, minWidth)
 	div := dimStyle.Render(strings.Repeat("─", w))
 	rows := m.visibleRows()
 
@@ -435,13 +461,13 @@ func (m Model) viewAgents() string {
 	}
 
 	// ── list ──
-	nameW := 28
-	if w > 110 {
-		nameW = 38
-	} else if w > 90 {
-		nameW = 32
+	nameW := nameWDefault
+	if w > wideBreakpoint {
+		nameW = nameWWide
+	} else if w > medBreakpoint {
+		nameW = nameWMed
 	}
-	vibeW := max(w-nameW-5, 10)
+	vibeW := max(w-nameW-vibeSubtract, minVibeWidth)
 
 	vh := m.listHeight()
 	end := min(m.offset+vh, len(rows))
@@ -456,7 +482,8 @@ func (m Model) viewAgents() string {
 		if r.kind == rowCategory {
 			// Category separator header
 			label := "  " + r.cat + " "
-			line := dimStyle.Render("  ── ") + catStyle.Render(r.cat) + dimStyle.Render(" "+strings.Repeat("─", maxInt(0, w-len(r.cat)-8)))
+			line := dimStyle.Render("  ── ") + catStyle.Render(r.cat) +
+				dimStyle.Render(" "+strings.Repeat("─", maxInt(0, w-len(r.cat)-descSubtract)))
 			_ = label
 			sb.WriteString(line + "\n")
 			continue
@@ -492,15 +519,19 @@ func (m Model) viewAgents() string {
 	}
 	sb.WriteString(div + "\n")
 	if m.filter != "" {
-		sb.WriteString(" " + scroll + helpStyle.Render("↑↓ navigate  enter select  esc clear filter  ctrl+c quit") + "\n")
+		sb.WriteString(
+			" " + scroll + helpStyle.Render("↑↓ navigate  enter select  esc clear filter  ctrl+c quit") + "\n",
+		)
 	} else {
-		sb.WriteString(" " + scroll + helpStyle.Render("↑↓ j k  ←→ category  type to search  enter select  ctrl+c quit") + "\n")
+		sb.WriteString(
+			" " + scroll + helpStyle.Render("↑↓ j k  ←→ category  type to search  enter select  ctrl+c quit") + "\n",
+		)
 	}
 	return sb.String()
 }
 
 func (m Model) viewTools() string {
-	w := maxInt(m.width, 40)
+	w := maxInt(m.width, minWidth)
 	div := dimStyle.Render(strings.Repeat("─", w))
 
 	agentName := m.selectedAgent.Name
@@ -525,7 +556,7 @@ func (m Model) viewTools() string {
 	nameW := 14
 	for i, t := range tools {
 		namePad := padW(truncW(t.name, nameW), nameW)
-		desc := truncW(t.desc, w-nameW-8)
+		desc := truncW(t.desc, w-nameW-descSubtract)
 		if i == m.toolCursor {
 			sb.WriteString(arrowStyle.Render("❯ ") + selStyle.Render(namePad) + "  " + dimStyle.Render(desc) + "\n")
 		} else {
@@ -543,7 +574,7 @@ func (m Model) viewTools() string {
 }
 
 func (m Model) viewScope() string {
-	w := maxInt(m.width, 40)
+	w := maxInt(m.width, minWidth)
 	div := dimStyle.Render(strings.Repeat("─", w))
 
 	agentName := m.selectedAgent.Name
@@ -562,7 +593,7 @@ func (m Model) viewScope() string {
 	labelW := 8
 	for i, s := range m.scopeOptions() {
 		labelPad := padW(s.label, labelW)
-		desc := truncW(s.desc, w-labelW-8)
+		desc := truncW(s.desc, w-labelW-descSubtract)
 		if i == m.scopeCursor {
 			sb.WriteString(arrowStyle.Render("❯ ") + selStyle.Render(labelPad) + "  " + dimStyle.Render(desc) + "\n")
 		} else {
@@ -590,7 +621,7 @@ func (m Model) viewDone() string {
 // visibleRows builds the display list: category headers + agent rows.
 // When filter is active: all categories, grouped, sorted by match score.
 // When filter is empty: only the current category.
-func (m Model) visibleRows() []row {
+func (m Model) visibleRows() []row { //nolint:gocognit
 	if m.filter == "" {
 		cat := ""
 		if len(m.categories) > 0 && m.catIdx < len(m.categories) {
@@ -658,11 +689,11 @@ func matchScore(a *agent.Agent, f string) int {
 		return 1
 	}
 	if strings.Contains(name, f) {
-		return 2
+		return scoreContains
 	}
 	haystack := strings.ToLower(a.Description + " " + a.Vibe + " " + a.Category)
 	if strings.Contains(haystack, f) {
-		return 3
+		return scoreHaystack
 	}
 	return -1
 }
@@ -707,9 +738,9 @@ func (m Model) firstAgentRow(rows []row) int {
 
 func (m Model) listHeight() int {
 	// catLine(1) + filterLine(1) + divider(1) + divider(1) + footer(1) = 5
-	h := m.height - 5
-	if h < 5 {
-		return 5
+	h := m.height - listHeadHeight
+	if h < minListHeight {
+		return minListHeight
 	}
 	return h
 }

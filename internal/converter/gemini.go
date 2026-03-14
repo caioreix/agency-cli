@@ -9,7 +9,7 @@ import (
 
 type geminiCLI struct{}
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	Register("gemini-cli", &geminiCLI{})
 }
 
@@ -17,10 +17,10 @@ func (c *geminiCLI) Name() string          { return "Gemini CLI" }
 func (c *geminiCLI) Description() string   { return "~/.gemini/extensions/agency-agents/" }
 func (c *geminiCLI) IsProjectScoped() bool { return false }
 
-func (c *geminiCLI) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+func (c *geminiCLI) Convert(a *agent.Agent, destDir string, _ string) ([]string, error) {
 	// gemini-cli installs globally regardless of scope
 	skillDir := filepath.Join(destDir, "skills", a.Slug)
-	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+	if err := os.MkdirAll(skillDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
 		return nil, err
 	}
 
@@ -30,7 +30,7 @@ func (c *geminiCLI) Convert(a *agent.Agent, destDir string, scope string) ([]str
 		"description: " + a.Description + "\n" +
 		"---\n" + a.Body
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
 		return nil, err
 	}
 
@@ -42,8 +42,12 @@ func (c *geminiCLI) Convert(a *agent.Agent, destDir string, scope string) ([]str
   "version": "1.0.0"
 }
 `
-		if err := os.WriteFile(manifestFile, []byte(manifest), 0o644); err != nil {
-			return nil, err
+		if writeErr := os.WriteFile( //nolint:gosec // G306: world-readable
+			manifestFile,
+			[]byte(manifest),
+			0o644,
+		); writeErr != nil {
+			return nil, writeErr
 		}
 	}
 

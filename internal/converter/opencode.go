@@ -1,7 +1,7 @@
 package converter
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +11,7 @@ import (
 
 type opencode struct{}
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	Register("opencode", &opencode{})
 }
 
@@ -21,9 +21,9 @@ func (c *opencode) IsProjectScoped() bool { return true }
 
 func (c *opencode) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
 	if scope == ScopeGlobal {
-		return nil, fmt.Errorf("opencode is project-scoped; --scope global is not supported")
+		return nil, errors.New("opencode is project-scoped; --scope global is not supported")
 	}
-	if err := os.MkdirAll(destDir, 0o755); err != nil {
+	if err := os.MkdirAll(destDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
 		return nil, err
 	}
 
@@ -37,7 +37,7 @@ func (c *opencode) Convert(a *agent.Agent, destDir string, scope string) ([]stri
 		"color: '" + color + "'\n" +
 		"---\n" + a.Body
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
 		return nil, err
 	}
 

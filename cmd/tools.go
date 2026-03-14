@@ -9,12 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const tabwriterPadding = 2
+
 var toolsCmd = &cobra.Command{
 	Use:   "tools",
 	Short: "List supported tools",
 	Long:  "List all supported target tools and their installation destinations.",
-	Run: func(cmd *cobra.Command, args []string) {
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	Run: func(_ *cobra.Command, _ []string) {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabwriterPadding, ' ', 0)
 		fmt.Fprintln(w, "TOOL\tDESTINATION\tSCOPE")
 
 		for _, name := range converter.SupportedTools {
@@ -31,10 +33,12 @@ var toolsCmd = &cobra.Command{
 			fmt.Fprintf(w, "%s\t%s\t%s\n", name, c.Description(), scope)
 		}
 
-		w.Flush()
+		if err := w.Flush(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 	},
 }
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	rootCmd.AddCommand(toolsCmd)
 }

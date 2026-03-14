@@ -19,7 +19,7 @@ type Converter interface {
 	IsProjectScoped() bool
 }
 
-var registry = map[string]Converter{}
+var registry = map[string]Converter{} //nolint:gochecknoglobals // package-level converter registry
 
 func Register(name string, c Converter) {
 	registry[name] = c
@@ -37,7 +37,7 @@ func All() map[string]Converter {
 	return registry
 }
 
-var SupportedTools = []string{
+var SupportedTools = []string{ //nolint:gochecknoglobals // exported package-level tool list
 	"claude-code",
 	"copilot",
 	"cursor",

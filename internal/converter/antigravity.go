@@ -9,7 +9,7 @@ import (
 
 type antigravity struct{}
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	Register("antigravity", &antigravity{})
 }
 
@@ -17,11 +17,11 @@ func (c *antigravity) Name() string          { return "Antigravity" }
 func (c *antigravity) Description() string   { return "~/.gemini/antigravity/skills/" }
 func (c *antigravity) IsProjectScoped() bool { return false }
 
-func (c *antigravity) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+func (c *antigravity) Convert(a *agent.Agent, destDir string, _ string) ([]string, error) {
 	// antigravity installs globally regardless of scope
 	slug := "agency-" + a.Slug
 	skillDir := filepath.Join(destDir, slug)
-	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+	if err := os.MkdirAll(skillDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
 		return nil, err
 	}
 
@@ -33,7 +33,7 @@ func (c *antigravity) Convert(a *agent.Agent, destDir string, scope string) ([]s
 		"source: community\n" +
 		"---\n" + a.Body
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
 		return nil, err
 	}
 

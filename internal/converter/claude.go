@@ -9,7 +9,7 @@ import (
 
 type claudeCode struct{}
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	Register("claude-code", &claudeCode{})
 }
 
@@ -17,9 +17,9 @@ func (c *claudeCode) Name() string          { return "Claude Code" }
 func (c *claudeCode) Description() string   { return "~/.claude/agents/" }
 func (c *claudeCode) IsProjectScoped() bool { return false }
 
-func (c *claudeCode) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+func (c *claudeCode) Convert(a *agent.Agent, destDir string, _ string) ([]string, error) {
 	// claude-code installs globally regardless of scope
-	if err := os.MkdirAll(destDir, 0o755); err != nil {
+	if err := os.MkdirAll(destDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
 		return nil, err
 	}
 
@@ -39,7 +39,7 @@ func (c *claudeCode) Convert(a *agent.Agent, destDir string, scope string) ([]st
 	}
 	content += "---\n" + a.Body
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
 		return nil, err
 	}
 

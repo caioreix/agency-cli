@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var agentDirs = []string{
+var agentDirs = []string{ //nolint:gochecknoglobals // Go does not support const slices
 	"design", "engineering", "game-development", "marketing",
 	"paid-media", "sales", "product", "project-management",
 	"testing", "support", "spatial-computing", "specialized",
@@ -61,7 +61,9 @@ func Parse(filePath, category string) (*Agent, error) {
 			key := strings.TrimSpace(line[:idx])
 			val := strings.TrimSpace(line[idx+2:])
 			// Strip surrounding quotes (single or double)
-			if len(val) >= 2 && ((val[0] == '"' && val[len(val)-1] == '"') || (val[0] == '\'' && val[len(val)-1] == '\'')) {
+			isDoubleQuoted := len(val) >= 2 && val[0] == '"' && val[len(val)-1] == '"'
+			isSingleQuoted := len(val) >= 2 && val[0] == '\'' && val[len(val)-1] == '\''
+			if isDoubleQuoted || isSingleQuoted {
 				val = val[1 : len(val)-1]
 			}
 			fields[key] = val
@@ -113,12 +115,12 @@ func ListAll(repoDir string) ([]*Agent, error) {
 				continue
 			}
 
-			agent, err := Parse(filepath.Join(dirPath, entry.Name()), dir)
-			if err != nil {
+			parsed, parseErr := Parse(filepath.Join(dirPath, entry.Name()), dir)
+			if parseErr != nil {
 				continue // skip non-agent files
 			}
 
-			agents = append(agents, agent)
+			agents = append(agents, parsed)
 		}
 	}
 

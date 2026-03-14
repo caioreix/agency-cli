@@ -1,7 +1,7 @@
 package converter
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +11,9 @@ import (
 
 type windsurf struct{}
 
-func init() {
+const separatorWidth = 80
+
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	Register("windsurf", &windsurf{})
 }
 
@@ -21,16 +23,16 @@ func (c *windsurf) IsProjectScoped() bool { return true }
 
 func (c *windsurf) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
 	if scope == ScopeGlobal {
-		return nil, fmt.Errorf("windsurf is project-scoped; --scope global is not supported")
+		return nil, errors.New("windsurf is project-scoped; --scope global is not supported")
 	}
-	if err := os.MkdirAll(destDir, 0o755); err != nil {
+	if err := os.MkdirAll(destDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
 		return nil, err
 	}
 
 	outFile := filepath.Join(destDir, ".windsurfrules")
 
 	// Windsurf uses a single rules file; append if exists
-	separator := strings.Repeat("=", 80)
+	separator := strings.Repeat("=", separatorWidth)
 	entry := "\n" + separator + "\n" +
 		"## " + a.Name + "\n" +
 		a.Description + "\n" +
@@ -50,7 +52,7 @@ func (c *windsurf) Convert(a *agent.Agent, destDir string, scope string) ([]stri
 		content = header + entry
 	}
 
-	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil { //nolint:gosec // G306: world-readable
 		return nil, err
 	}
 

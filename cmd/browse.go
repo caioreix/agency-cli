@@ -14,12 +14,12 @@ var browseCmd = &cobra.Command{
 	RunE:  runTUI,
 }
 
-func runTUI(cmd *cobra.Command, args []string) error {
+func runTUI(_ *cobra.Command, _ []string) error {
 	p := tea.NewProgram(tui.New(), tea.WithAltScreen())
 	_, err := p.Run()
 	return err
 }
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	rootCmd.AddCommand(browseCmd)
 }

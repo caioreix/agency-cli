@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
@@ -13,6 +14,8 @@ import (
 )
 
 var categoryFlag string
+
+const colPadding = 2
 
 var ansiStripper = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
@@ -44,7 +47,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List available agents",
 	Long:  "List all available agents from the agency-agents repository. Use --category to filter by category.",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		repoDir, err := repo.EnsureRepo()
 		if err != nil {
 			return fmt.Errorf("failed to ensure repo: %w", err)
@@ -101,23 +104,23 @@ var listCmd = &cobra.Command{
 		const maxVibe = 60
 
 		divider := color.ApplyDim(
-			strings.Repeat("─", w0+2) + "┼" +
-				strings.Repeat("─", w1+2) + "┼" +
-				strings.Repeat("─", maxVibe+2),
+			strings.Repeat("─", w0+colPadding) + "┼" +
+				strings.Repeat("─", w1+colPadding) + "┼" +
+				strings.Repeat("─", maxVibe+colPadding),
 		)
 
 		// Header
-		fmt.Printf(" %s │ %s │ %s\n",
+		fmt.Fprintf(os.Stdout, " %s │ %s │ %s\n",
 			pad(color.ApplyBold("CATEGORY"), w0),
 			pad(color.ApplyBold("AGENT"), w1),
 			color.ApplyBold("VIBE"),
 		)
-		fmt.Println(divider)
+		fmt.Fprintln(os.Stdout, divider)
 
 		prevCat := ""
 		for _, r := range rows {
 			if r.category != prevCat && prevCat != "" {
-				fmt.Println(divider)
+				fmt.Fprintln(os.Stdout, divider)
 			}
 			prevCat = r.category
 
@@ -139,7 +142,7 @@ var listCmd = &cobra.Command{
 			nameColored := color.Apply(r.name, r.agentColor)
 			catDim := color.ApplyDim(r.category)
 
-			fmt.Printf(" %s │ %s │ %s\n",
+			fmt.Fprintf(os.Stdout, " %s │ %s │ %s\n",
 				pad(catDim, w0),
 				pad(nameColored, w1),
 				vibe,
@@ -150,7 +153,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	listCmd.Flags().StringVarP(&categoryFlag, "category", "c", "", "filter by category (e.g., engineering, design)")
 	rootCmd.AddCommand(listCmd)
 }

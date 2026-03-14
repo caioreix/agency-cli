@@ -10,7 +10,9 @@ import (
 
 type openclaw struct{}
 
-func init() {
+const soulTarget = "soul"
+
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	Register("openclaw", &openclaw{})
 }
 
@@ -18,10 +20,10 @@ func (c *openclaw) Name() string          { return "OpenClaw" }
 func (c *openclaw) Description() string   { return "~/.openclaw/agency-agents/" }
 func (c *openclaw) IsProjectScoped() bool { return false }
 
-func (c *openclaw) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+func (c *openclaw) Convert(a *agent.Agent, destDir string, _ string) ([]string, error) {
 	// openclaw installs globally regardless of scope
 	agentDir := filepath.Join(destDir, a.Slug)
-	if err := os.MkdirAll(agentDir, 0o755); err != nil {
+	if err := os.MkdirAll(agentDir, 0o755); err != nil { //nolint:gosec // G301: world-traversable
 		return nil, err
 	}
 
@@ -29,13 +31,17 @@ func (c *openclaw) Convert(a *agent.Agent, destDir string, scope string) ([]stri
 
 	// SOUL.md — persona, tone, boundaries
 	soulFile := filepath.Join(agentDir, "SOUL.md")
-	if err := os.WriteFile(soulFile, []byte(soulContent), 0o644); err != nil {
+	if err := os.WriteFile(soulFile, []byte(soulContent), 0o644); err != nil { //nolint:gosec // G306: world-readable
 		return nil, err
 	}
 
 	// AGENTS.md — mission, deliverables, workflow
 	agentsFile := filepath.Join(agentDir, "AGENTS.md")
-	if err := os.WriteFile(agentsFile, []byte(agentsContent), 0o644); err != nil {
+	if err := os.WriteFile( //nolint:gosec // G306: world-readable
+		agentsFile,
+		[]byte(agentsContent),
+		0o644,
+	); err != nil {
 		return nil, err
 	}
 
@@ -47,14 +53,18 @@ func (c *openclaw) Convert(a *agent.Agent, destDir string, scope string) ([]stri
 	} else {
 		identityContent = "# " + a.Name + "\n" + a.Description + "\n"
 	}
-	if err := os.WriteFile(identityFile, []byte(identityContent), 0o644); err != nil {
+	if err := os.WriteFile( //nolint:gosec // G306: world-readable
+		identityFile,
+		[]byte(identityContent),
+		0o644,
+	); err != nil {
 		return nil, err
 	}
 
 	return []string{soulFile, agentsFile, identityFile}, nil
 }
 
-func splitOpenClawSections(body string) (soul, agents string) {
+func splitOpenClawSections(body string) (string, string) { //nolint:gocognit
 	soulKeywords := []string{"identity", "communication", "style", "critical rule", "rules you must follow"}
 	lines := strings.Split(body, "\n")
 
@@ -63,10 +73,13 @@ func splitOpenClawSections(body string) (soul, agents string) {
 	var currentSection strings.Builder
 
 	for _, line := range lines {
-		if strings.HasPrefix(line, "## ") {
+		if strings.HasPrefix( //nolint:nestif // parsing algorithm requires nested conditions
+			line,
+			"## ",
+		) {
 			// Flush current section
 			if currentSection.Len() > 0 {
-				if currentTarget == "soul" {
+				if currentTarget == soulTarget {
 					soulBuilder.WriteString(currentSection.String())
 				} else {
 					agentsBuilder.WriteString(currentSection.String())
@@ -79,7 +92,7 @@ func splitOpenClawSections(body string) (soul, agents string) {
 			currentTarget = "agents"
 			for _, kw := range soulKeywords {
 				if strings.Contains(headerLower, kw) {
-					currentTarget = "soul"
+					currentTarget = soulTarget
 					break
 				}
 			}
@@ -91,7 +104,7 @@ func splitOpenClawSections(body string) (soul, agents string) {
 
 	// Flush final section
 	if currentSection.Len() > 0 {
-		if currentTarget == "soul" {
+		if currentTarget == soulTarget {
 			soulBuilder.WriteString(currentSection.String())
 		} else {
 			agentsBuilder.WriteString(currentSection.String())

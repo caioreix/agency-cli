@@ -9,7 +9,7 @@ import (
 
 type copilot struct{}
 
-func init() {
+func init() { //nolint:gochecknoinits // required by cobra/converter
 	Register("copilot", &copilot{})
 }
 
@@ -17,7 +17,7 @@ func (c *copilot) Name() string          { return "Copilot" }
 func (c *copilot) Description() string   { return ".github/agents/ + ~/.copilot/agents/" }
 func (c *copilot) IsProjectScoped() bool { return true }
 
-func (c *copilot) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
+func (c *copilot) Convert(a *agent.Agent, _ string, scope string) ([]string, error) {
 	// Copilot uses original .md files with frontmatter, copied to two locations
 	content := "---\n" +
 		"name: " + a.Name + "\n" +
@@ -53,12 +53,16 @@ func (c *copilot) Convert(a *agent.Agent, destDir string, scope string) ([]strin
 
 	var files []string
 	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return nil, err
+		if mkdirErr := os.MkdirAll(dir, 0o755); mkdirErr != nil { //nolint:gosec // G301: world-traversable
+			return nil, mkdirErr
 		}
 		outFile := filepath.Join(dir, a.Slug+".md")
-		if err := os.WriteFile(outFile, []byte(content), 0o644); err != nil {
-			return nil, err
+		if writeErr := os.WriteFile( //nolint:gosec // G306: world-readable
+			outFile,
+			[]byte(content),
+			0o644,
+		); writeErr != nil {
+			return nil, writeErr
 		}
 		files = append(files, outFile)
 	}
