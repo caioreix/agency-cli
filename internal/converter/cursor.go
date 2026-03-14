@@ -14,8 +14,8 @@ func init() {
 	Register("cursor", &cursor{})
 }
 
-func (c *cursor) Name() string        { return "Cursor" }
-func (c *cursor) Description() string  { return ".cursor/rules/ (project-scoped)" }
+func (c *cursor) Name() string          { return "Cursor" }
+func (c *cursor) Description() string   { return ".cursor/rules/ (project-scoped)" }
 func (c *cursor) IsProjectScoped() bool { return true }
 
 func (c *cursor) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

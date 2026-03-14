@@ -14,8 +14,8 @@ func init() {
 	Register("openclaw", &openclaw{})
 }
 
-func (c *openclaw) Name() string        { return "OpenClaw" }
-func (c *openclaw) Description() string  { return "~/.openclaw/agency-agents/" }
+func (c *openclaw) Name() string          { return "OpenClaw" }
+func (c *openclaw) Description() string   { return "~/.openclaw/agency-agents/" }
 func (c *openclaw) IsProjectScoped() bool { return false }
 
 func (c *openclaw) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

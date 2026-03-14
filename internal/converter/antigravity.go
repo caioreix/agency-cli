@@ -13,8 +13,8 @@ func init() {
 	Register("antigravity", &antigravity{})
 }
 
-func (c *antigravity) Name() string        { return "Antigravity" }
-func (c *antigravity) Description() string  { return "~/.gemini/antigravity/skills/" }
+func (c *antigravity) Name() string          { return "Antigravity" }
+func (c *antigravity) Description() string   { return "~/.gemini/antigravity/skills/" }
 func (c *antigravity) IsProjectScoped() bool { return false }
 
 func (c *antigravity) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

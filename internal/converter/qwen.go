@@ -14,8 +14,8 @@ func init() {
 	Register("qwen", &qwen{})
 }
 
-func (c *qwen) Name() string        { return "Qwen Code" }
-func (c *qwen) Description() string  { return ".qwen/agents/ (project-scoped)" }
+func (c *qwen) Name() string          { return "Qwen Code" }
+func (c *qwen) Description() string   { return ".qwen/agents/ (project-scoped)" }
 func (c *qwen) IsProjectScoped() bool { return true }
 
 func (c *qwen) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

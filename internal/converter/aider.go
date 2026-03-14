@@ -14,8 +14,8 @@ func init() {
 	Register("aider", &aider{})
 }
 
-func (c *aider) Name() string        { return "Aider" }
-func (c *aider) Description() string  { return "CONVENTIONS.md (project-scoped)" }
+func (c *aider) Name() string          { return "Aider" }
+func (c *aider) Description() string   { return "CONVENTIONS.md (project-scoped)" }
 func (c *aider) IsProjectScoped() bool { return true }
 
 func (c *aider) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

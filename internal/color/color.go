@@ -39,7 +39,7 @@ var ansiMap = map[string]string{
 
 // Basic ANSI colors as RGB for nearest-color fallback
 type basicColor struct {
-	code string
+	code    string
 	r, g, b uint8
 }
 

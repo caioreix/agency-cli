@@ -15,8 +15,8 @@ func init() {
 	Register("windsurf", &windsurf{})
 }
 
-func (c *windsurf) Name() string        { return "Windsurf" }
-func (c *windsurf) Description() string  { return ".windsurfrules (project-scoped)" }
+func (c *windsurf) Name() string          { return "Windsurf" }
+func (c *windsurf) Description() string   { return ".windsurfrules (project-scoped)" }
 func (c *windsurf) IsProjectScoped() bool { return true }
 
 func (c *windsurf) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

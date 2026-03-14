@@ -15,8 +15,8 @@ func init() {
 	Register("opencode", &opencode{})
 }
 
-func (c *opencode) Name() string        { return "OpenCode" }
-func (c *opencode) Description() string  { return ".opencode/agents/ (project-scoped)" }
+func (c *opencode) Name() string          { return "OpenCode" }
+func (c *opencode) Description() string   { return ".opencode/agents/ (project-scoped)" }
 func (c *opencode) IsProjectScoped() bool { return true }
 
 func (c *opencode) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
@@ -47,26 +47,26 @@ func (c *opencode) Convert(a *agent.Agent, destDir string, scope string) ([]stri
 func resolveOpenCodeColor(color string) string {
 	c := strings.TrimSpace(strings.ToLower(color))
 	colors := map[string]string{
-		"cyan":           "#00FFFF",
-		"blue":           "#3498DB",
-		"green":          "#2ECC71",
-		"red":            "#E74C3C",
-		"purple":         "#9B59B6",
-		"orange":         "#F39C12",
-		"teal":           "#008080",
-		"indigo":         "#6366F1",
-		"pink":           "#E84393",
-		"gold":           "#EAB308",
-		"amber":          "#F59E0B",
-		"neon-green":     "#10B981",
-		"neon-cyan":      "#06B6D4",
-		"metallic-blue":  "#3B82F6",
-		"yellow":         "#EAB308",
-		"violet":         "#8B5CF6",
-		"rose":           "#F43F5E",
-		"lime":           "#84CC16",
-		"gray":           "#6B7280",
-		"fuchsia":        "#D946EF",
+		"cyan":          "#00FFFF",
+		"blue":          "#3498DB",
+		"green":         "#2ECC71",
+		"red":           "#E74C3C",
+		"purple":        "#9B59B6",
+		"orange":        "#F39C12",
+		"teal":          "#008080",
+		"indigo":        "#6366F1",
+		"pink":          "#E84393",
+		"gold":          "#EAB308",
+		"amber":         "#F59E0B",
+		"neon-green":    "#10B981",
+		"neon-cyan":     "#06B6D4",
+		"metallic-blue": "#3B82F6",
+		"yellow":        "#EAB308",
+		"violet":        "#8B5CF6",
+		"rose":          "#F43F5E",
+		"lime":          "#84CC16",
+		"gray":          "#6B7280",
+		"fuchsia":       "#D946EF",
 	}
 
 	if hex, ok := colors[c]; ok {

@@ -13,8 +13,8 @@ func init() {
 	Register("copilot", &copilot{})
 }
 
-func (c *copilot) Name() string        { return "Copilot" }
-func (c *copilot) Description() string  { return ".github/agents/ + ~/.copilot/agents/" }
+func (c *copilot) Name() string          { return "Copilot" }
+func (c *copilot) Description() string   { return ".github/agents/ + ~/.copilot/agents/" }
 func (c *copilot) IsProjectScoped() bool { return true }
 
 func (c *copilot) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

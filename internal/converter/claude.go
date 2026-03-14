@@ -13,8 +13,8 @@ func init() {
 	Register("claude-code", &claudeCode{})
 }
 
-func (c *claudeCode) Name() string        { return "Claude Code" }
-func (c *claudeCode) Description() string  { return "~/.claude/agents/" }
+func (c *claudeCode) Name() string          { return "Claude Code" }
+func (c *claudeCode) Description() string   { return "~/.claude/agents/" }
 func (c *claudeCode) IsProjectScoped() bool { return false }
 
 func (c *claudeCode) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {

@@ -13,8 +13,8 @@ func init() {
 	Register("gemini-cli", &geminiCLI{})
 }
 
-func (c *geminiCLI) Name() string        { return "Gemini CLI" }
-func (c *geminiCLI) Description() string  { return "~/.gemini/extensions/agency-agents/" }
+func (c *geminiCLI) Name() string          { return "Gemini CLI" }
+func (c *geminiCLI) Description() string   { return "~/.gemini/extensions/agency-agents/" }
 func (c *geminiCLI) IsProjectScoped() bool { return false }
 
 func (c *geminiCLI) Convert(a *agent.Agent, destDir string, scope string) ([]string, error) {
