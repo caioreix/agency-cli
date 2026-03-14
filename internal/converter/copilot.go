@@ -22,15 +22,15 @@ func (c *copilot) Convert(a *agent.Agent, _ string, scope string) ([]string, err
 	content := "---\n" +
 		"name: " + a.Name + "\n" +
 		"description: " + a.Description + "\n"
-	if a.Color != "" {
-		content += "color: " + a.Color + "\n"
-	}
-	if a.Emoji != "" {
-		content += "emoji: " + a.Emoji + "\n"
-	}
-	if a.Vibe != "" {
-		content += "vibe: " + a.Vibe + "\n"
-	}
+	// if a.Color != "" {
+	// 	content += "color: " + a.Color + "\n"
+	// }
+	// if a.Emoji != "" {
+	// 	content += "emoji: " + a.Emoji + "\n"
+	// }
+	// if a.Vibe != "" {
+	// 	content += "vibe: " + a.Vibe + "\n"
+	// }
 	content += "---\n" + a.Body
 
 	home, err := os.UserHomeDir()
